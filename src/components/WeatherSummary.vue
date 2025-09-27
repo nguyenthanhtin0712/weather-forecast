@@ -92,7 +92,6 @@ export default {
 
         <!-- Weather Icon and Temperature -->
         <div class="mb-[10px]">
-            <img src="https://flagsapi.com/VN/flat/64.png">
             <img :src="`https://openweathermap.org/img/wn/${weatherInfo?.weather[0].icon}@2x.png`" alt="Weather Icon" class="w-30"/>
         </div>
 
