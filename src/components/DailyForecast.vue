@@ -6,23 +6,53 @@ export default {
             required: true,
         },
     },
-    data() {
-        return {
-            currentTime: this.getCurrentTime(),
-        };
-    },
-    methods: {
-        getCurrentTime() {
-            const date = new Date();
-            // Định dạng long là chữ, ví dụ: "Thứ Hai, 1 Tháng 1, 2024", còn numeric là số, ví dụ: "01/01/2024"
-            const options = {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-            };
-            // Chuyển đổi sang định dạng tiếng Việt
-            return date.toLocaleDateString("vi-VN", options);
+    computed: {
+        nextFourDays() {
+            // Gom các phần tử theo ngày UTC
+            if (!this.weatherInfo?.list) return [];
+            const today = new Date();
+            const daysMap = {};
+            for (const item of this.weatherInfo.list) {
+                const utcDate = new Date(item.dt * 1000);
+                const key = utcDate.getUTCFullYear() + '-' + (utcDate.getUTCMonth() + 1) + '-' + utcDate.getUTCDate();
+                if (!daysMap[key]) daysMap[key] = [];
+                daysMap[key].push(item);
+            }
+            // Lấy 4 ngày tiếp theo (bỏ hôm nay)
+            const result = [];
+            const keys = Object.keys(daysMap).filter(dateStr => {
+                const d = new Date(dateStr);
+                return d.getUTCDate() !== today.getUTCDate() || d.getUTCMonth() !== today.getUTCMonth() || d.getUTCFullYear() !== today.getUTCFullYear();
+            });
+            for (let i = 0; i < Math.min(4, keys.length); i++) {
+                const arr = daysMap[keys[i]];
+                // Đếm tần suất weather
+                const freq = {};
+                let iconMap = {};
+                for (const item of arr) {
+                    const main = item.weather[0].main;
+                    freq[main] = (freq[main] || 0) + 1;
+                    // Lưu icon cuối cùng cho loại weather này
+                    iconMap[main] = item.weather[0].icon;
+                }
+                // Tìm loại weather xuất hiện nhiều nhất
+                let maxWeather = null, maxCount = 0;
+                for (const w in freq) {
+                    if (freq[w] > maxCount) {
+                        maxWeather = w;
+                        maxCount = freq[w];
+                    }
+                }
+                // Lấy ngày đầu tiên của mảng
+                const firstDate = new Date(arr[0].dt * 1000);
+                result.push({
+                    weekday: firstDate.toLocaleDateString("en-GB", { weekday: "long", timeZone: "UTC" }),
+                    dayMonthYear: firstDate.toLocaleDateString("en-GB", { day: "numeric", month: "numeric", year: "numeric", timeZone: "UTC" }),
+                    weather: maxWeather,
+                    icon: iconMap[maxWeather]
+                });
+            }
+            return result;
         },
     }
 }
@@ -30,21 +60,21 @@ export default {
 
 <template>
     <div class="bg-custom-image-2 bg-cover bg-top p-5 rounded-3xl w-full">
-        <h2 class="text-lg font-bold text-orange-600 mb-[10px] tracking-wide">Weather Daily</h2>
-        <div class="flex flex-row gap-3 w-full justify-center">
-            <!-- 7 ngày, mỗi ngày là 1 card nhỏ -->
-            <div v-for="day in 7" :key="day"
-                class="bg-custom-image-1 bg-cover bg-top p-[10px] rounded-3xl flex flex-col items-center w-32">
-                <div class="flex flex-col items-center">
-                    <span class="text-[white] font-bold text-[14px] mb-2">Monday</span>
-                    <span class="text-[white] text-[14px] mb-2">1/1/1111</span>
-                    <span class="text-[white] text-[14px]">Rain</span>
+        <h2 class="text-lg font-bold text-orange-600 mb-[8px] tracking-wide">Weather Daily</h2>
+        <div class="flex flex-row gap-3 w-full justify-center space-x-2">
+            <div v-for="(day, index) in nextFourDays" :key="index"
+                class="bg-custom-image-1 bg-cover bg-top flex justify-between p-[10px] rounded-3xl items-center">
+                <div class="flex flex-col items-start ml-2">
+                    <span class="text-[white] font-bold text-[14px] mb-2">{{ day.weekday }}</span>
+                    <span class="text-[white] text-[14px] mb-2">{{ day.dayMonthYear }}</span>
+                    <span class="text-[white] text-[14px]">{{ day.weather }}</span>
                 </div>
-                <div class="mb-[10px]">
-                    <img :src="`https://openweathermap.org/img/wn/${weatherInfo?.weather[0].icon}@2x.png`"
-                        alt="Weather Icon" class="w-20" />
+                <div class="">
+                    <img :src="`https://openweathermap.org/img/wn/${day.icon}@2x.png`" alt="Weather Icon"
+                        class="w-30" />
                 </div>
             </div>
         </div>
+
     </div>
 </template>

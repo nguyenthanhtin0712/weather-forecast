@@ -9,7 +9,6 @@ export default {
     },
     data() {
         return {
-            currentTime: this.getCurrentTime(),
             address: "",
             cityList: [], // Danh sách thành phố
             suggestions: [], // Gợi ý autocomplete
@@ -17,18 +16,6 @@ export default {
         };
     },
     methods: {
-        getCurrentTime() {
-            const date = new Date();
-            // Định dạng long là chữ, ví dụ: "Thứ Hai, 1 Tháng 1, 2024", còn numeric là số, ví dụ: "01/01/2024"
-            const options = {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-            };
-            // Chuyển đổi sang định dạng tiếng Việt
-            return date.toLocaleDateString("vi-VN", options);
-        },
         onInput() {
             const input = this.address.trim().toLowerCase();
             if (input.length === 0) {
@@ -55,6 +42,7 @@ export default {
         async loadCityList() {
             // Đọc file JSON lớn qua fetch
             try {
+                // Đường dẫn đúng cho public assets khi dùng Vite
                 const res = await fetch("/src/assets/city-lists/current.city.list.json");
                 if (!res.ok) throw new Error("Không thể tải danh sách thành phố");
                 this.cityList = await res.json();
@@ -67,24 +55,39 @@ export default {
             setTimeout(() => { this.showSuggestions = false; }, 200);
         },
     },
-
-    // Load danh sách thành phố khi component được gắn vào DOM
     mounted() {
         this.loadCityList();
     },
+    computed: {
+        countryFlag() {
+            const country = this.weatherInfo?.city?.country;
+            return country ? `https://flagsapi.com/${country}/flat/64.png` : null;
+        }
+    }
+
 }
 
 </script>
 
 <template>
-    <div class="bg-custom-image bg-cover bg-top p-[10px] rounded-3xl flex items-center gap-2 max-h-[100px]">
-        <img class="f" src="https://flagsapi.com/VN/flat/64.png">
-        <input
-            type="text"
-            placeholder="Search for a city..."
-            class="flex w-[250px] p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />       
-        <button class="p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+    <div
+        class="bg-custom-image bg-cover bg-top p-[10px] rounded-3xl flex items-center gap-2 max-h-[100px] w-5/6 justify-center relative">
+        <!--  -->
+        <img v-if="countryFlag" :src="countryFlag" width="60" height="50" alt="Country Flag" />
+
+        <input type="text" placeholder="Search for a city..."
+            class="flex max-w-[200px] p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            v-model="address" @input="onInput" @keydown.enter="onEnter" @blur="onBlur" autocomplete="off" />
+
+        <ul v-if="showSuggestions"
+            class="absolute left-20 top-20 w-[200px] bg-[#222] z-10 rounded shadow max-h-60 overflow-y-auto border border-gray-700">
+            <li v-for="city in suggestions" :key="city.id"
+                class="px-3 py-2 hover:bg-[#444] cursor-pointer text-white text-sm"
+                @mousedown.prevent="selectSuggestion(city)">
+                {{ city.name }}<span v-if="city.country">, {{ city.country }}</span>
+            </li>
+        </ul>
+        <button class="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition" @click="onEnter">
             Search
         </button>
     </div>

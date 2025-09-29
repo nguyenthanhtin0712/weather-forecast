@@ -11,7 +11,7 @@ export default {
     setup(props) {
         const { weatherInfo } = toRefs(props);
 
-        const timezone = computed(() => weatherInfo.value?.timezone || 0);
+        const timezone = computed(() => weatherInfo.value?.city?.timezone || 0);
 
         const getTime = (seconds) => {
             return new Date(seconds * 1000).toLocaleTimeString("ru-RU", {
@@ -22,10 +22,10 @@ export default {
         // Tính toán thời gian mặt trời mọc và lặn dựa trên dữ liệu từ API
         // Cộng thêm timezone để có thời gian chính xác tại vị trí địa lý
         const sunriseTime = computed(() =>
-            getTime(weatherInfo.value?.sys?.sunrise + timezone.value)
+            getTime(weatherInfo.value?.city?.sunrise + timezone.value)
         );
         const sunsetTime = computed(() =>
-            getTime(weatherInfo.value?.sys?.sunset + timezone.value)
+            getTime(weatherInfo.value?.city?.sunset + timezone.value)
         );
 
         return {
@@ -38,8 +38,8 @@ export default {
 
 <template>
     <div class="bg-custom-image-2 bg-cover bg-top p-5 rounded-3xl shrink">
-        <h2 class="text-lg font-bold text-orange-600 tracking-wide mb-[10px]">Weather Details</h2>
-        <div class="flex space-x-10">
+        <h2 class="text-lg font-bold text-orange-600 tracking-wide mb-[8px]">Weather Details</h2>
+        <div class="flex space-x-5">
 
             <!-- Thẻ Temperature -->
             <div class="basis-[25%] space-y-3">
@@ -51,7 +51,7 @@ export default {
                     <div class="flex justify-center">
                         <div class="flex space-x-1 items-center">
                             <span class="font-semibold text-[20px]">
-                                {{ weatherInfo?.main?.temp }}
+                                {{ weatherInfo?.list[0].main.temp }}
                             </span>
                             <span class="text-[14px] text-[#b5b5b5]"> °C</span>
                         </div>
@@ -60,16 +60,16 @@ export default {
 
                 <div class="bg-custom-image-1 bg-center bg-cover p-[14px] rounded-lg text-[white] flex flex-col">
                     <div class="flex items-center">
-                        <a class="text-[14px] pr-10" href="https://en.wikipedia.org/wiki/Wind_gust" target="_blank"
+                        <a class="text-[14px] pr-10" href="https://en.wikipedia.org/wiki/Apparent_temperature" target="_blank"
                             rel="noopener noreferrer">
-                            Feel like
+                            Feels like
                         </a>
                         <img src="../assets/img/temperature-warning.png" width="20" height="20" alt="gusts" />
                     </div>
                     <div class="flex space-x-5 mt-2">
                         <div class="flex space-x-1 items-center">
-                            <span class="font-semibold text-[18px]">{{ weatherInfo?.wind?.gust }}</span>
-                            <span class="text-[12px] text-[#b5b5b5]">m/s</span>
+                            <span class="font-semibold text-[18px]">{{ weatherInfo?.list[0].main.feels_like }}</span>
+                            <span class="text-[12px] text-[#b5b5b5]"> °C</span>
                         </div>
                     </div>
                 </div>
@@ -85,13 +85,13 @@ export default {
                     <div class="flex justify-between">
                         <div class="flex space-x-1 items-center">
                             <span class="font-semibold text-[20px]">
-                                {{ weatherInfo?.wind?.speed }}
+                                {{ weatherInfo?.list[0].wind.speed }}
                             </span>
                             <span class="text-[14px] text-[#b5b5b5]">m/s</span>
                         </div>
                         <div class="flex space-x-1 items-center">
                             <span class="font-semibold text-[20px]">
-                                {{ weatherInfo?.wind?.deg }}
+                                {{ weatherInfo?.list[0].wind?.deg }}
                             </span>
                             <span class="text-[14px] text-[#b5b5b5]">deg</span>
                         </div>
@@ -106,7 +106,7 @@ export default {
                     <div class="flex space-x-5 mt-2">
                         <div class="flex space-x-1 items-center">
                             <span class="font-semibold text-[18px]" href="https://en.wikipedia.org/wiki/Wind_gust" target="_blank"
-                                rel="noopener noreferrer"> {{ weatherInfo?.wind?.gust }} </span>
+                                rel="noopener noreferrer"> {{ weatherInfo?.list[0].wind?.gust }} </span>
                             <span class="text-[12px] text-[#b5b5b5]">m/s</span>
                         </div>
                     </div>
@@ -124,23 +124,23 @@ export default {
                     <div class="flex justify-center">
                         <div class="flex space-x-1 justify-center items-center">
                             <span class="font-semibold text-[20px]">
-                                {{ weatherInfo?.main?.pressure }}
+                                {{ weatherInfo?.list[0].rain?.["3h"] || 0 }}
                             </span>
-                            <span class="text-[14px] text-[#b5b5b5]">hPa</span>
+                            <span class="text-[14px] text-[#b5b5b5]">mm</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="bg-custom-image-1 bg-center bg-cover p-[14px] rounded-lg text-[white] flex flex-col">
                     <div class="flex items-center">
-                        <a class="text-[14px] pr-10" href="https://en.wikipedia.org/wiki/Apparent_temperature" target="_blank"
+                        <a class="text-[14px] pr-10" href="https://en.wikipedia.org/wiki/Humidity" target="_blank"
                                 rel="noopener noreferrer"> Humidity </a>
                         <img src="../assets/img/humidity.png" width="20" height="20" alt="humidity" />
                     </div>
                     <div class="flex space-x-5 mt-2">
                         <div class="flex space-x-1 items-center">
                             <span class="font-semibold text-[18px]">
-                                {{ weatherInfo?.main.feels_like }}
+                                {{ weatherInfo?.list[0].main.humidity }}
                             </span>
                             <span class="text-[12px] text-[#b5b5b5]"> %</span>
                         </div>
@@ -218,14 +218,14 @@ export default {
 
                 <div class="bg-custom-image-1 bg-center bg-cover p-[14px] rounded-lg text-[white] flex flex-col">
                     <div class="flex items-center">
-                        <a class="text-[14px] pr-10" href="https://en.wikipedia.org/wiki/Apparent_temperature" target="_blank"
+                        <a class="text-[14px] pr-10" href="https://en.wikipedia.org/wiki/Cloud_cover" target="_blank"
                                 rel="noopener noreferrer"> Cloudiness </a>
                         <img src="../assets/img/clouds.png" width="20" height="20" alt="cloud" />
                     </div>
                     <div class="flex space-x-5 mt-2">
                         <div class="flex space-x-1 items-center">
                             <span class="font-semibold text-[18px]">
-                                {{ weatherInfo?.clouds?.all }}
+                                {{ weatherInfo?.list[0].clouds?.all }}
                             </span>
                             <span class="text-[12px] text-[#b5b5b5]"> %</span>
                         </div>

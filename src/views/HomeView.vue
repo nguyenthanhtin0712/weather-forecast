@@ -1,13 +1,9 @@
 <script>
-import WeatherSummary from "../components/WeatherSummary.vue";
-import Highlights from "../components/Highlights.vue";
-import Coords from "../components/Coords.vue";
-import Humidity from "../components/Humidity.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import Summary from "@/components/Summary.vue";
 import Details from "@/components/Details.vue";
 import DailyForecast from "@/components/DailyForecast.vue";
-import AirPolution from "@/components/AirPolution.vue";
+import AirPollution from "@/components/AirPollution.vue";
 
 export default {
     data() {
@@ -25,30 +21,31 @@ export default {
         }
     },
     components: {
-        WeatherSummary,
-        Highlights,
-        Coords,
-        Humidity,
         SearchBar,
         Summary,
         Details,
         DailyForecast,
-        AirPolution,
+        AirPollution,
     },
     props: {
         weatherInfo: {
             type: [Object, null],
             required: true,
         },
+        airPollutionInfo: {
+            type: [Object, null],
+            required: false,
+            default: null,
+        },
     },
 };
 </script>
 
 <template>
-    <div class="flex justify-center gap-4 w-full">
+    <div class="flex justify-center w-full">
         <!-- Ở giữa -->
         <main class="min-h-screen flex items-center justify-center">
-            <div class="space-y-4 w-[1000px] m-5">
+            <div class="space-y-4 w-[800px] m-5">
                 <div class="flex space-x-6 w-[100%]">
                     <SearchBar :weatherInfo="weatherInfo" @address-entered="fetchWeather" />
                     <Summary :weatherInfo="weatherInfo" />
@@ -61,8 +58,9 @@ export default {
         </main>
 
         <!-- Cột phải -->
-        <div class="flex flex-col space-y-4 item-center">
-            <AirPolution :weatherInfo="weatherInfo" />
+        <div class="flex flex-col item-center pt-5">
+            <AirPollution :weatherInfo="weatherInfo" :airPollutionInfo="airPollutionInfo"
+                @fetch-air-pollution="$emit('fetch-air-pollution', ...arguments)" />
         </div>
     </div>
 
