@@ -10,7 +10,8 @@ export default {
         nextFourDays() {
             // Gom các phần tử theo ngày UTC
             if (!this.weatherInfo?.list) return [];
-            const today = new Date();
+            const now = new Date();
+            const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
             const daysMap = {};
             for (const item of this.weatherInfo.list) {
                 const utcDate = new Date(item.dt * 1000);
@@ -21,8 +22,15 @@ export default {
             // Lấy 4 ngày tiếp theo (bỏ hôm nay)
             const result = [];
             const keys = Object.keys(daysMap).filter(dateStr => {
-                const d = new Date(dateStr);
-                return d.getUTCDate() !== today.getUTCDate() || d.getUTCMonth() !== today.getUTCMonth() || d.getUTCFullYear() !== today.getUTCFullYear();
+                const [year, month, day] = dateStr.split('-').map(Number);
+                const d = new Date(Date.UTC(year, month - 1, day));
+                // Chỉ lấy ngày lớn hơn hôm nay (UTC)
+                return d > todayUTC;
+            }).sort((a, b) => {
+                // Sắp xếp tăng dần theo ngày
+                const [y1, m1, d1] = a.split('-').map(Number);
+                const [y2, m2, d2] = b.split('-').map(Number);
+                return new Date(Date.UTC(y1, m1 - 1, d1)) - new Date(Date.UTC(y2, m2 - 1, d2));
             });
             for (let i = 0; i < Math.min(4, keys.length); i++) {
                 const arr = daysMap[keys[i]];

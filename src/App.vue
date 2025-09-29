@@ -78,7 +78,7 @@ export default {
             this.city = city;
             this.getWeather();
         },
-
+        // Lấy dữ liệu ô nhiễm không khí từ API
         getAirPollution(lat, lon) {
             fetch(`${this.AIR_POLLUTION}?lat=${lat}&lon=${lon}&appid=${this.API_KEY}`)
                 .then(response => response.json().then(data => {

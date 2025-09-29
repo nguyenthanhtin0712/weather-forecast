@@ -9,10 +9,6 @@ export default {
     data() {
         return {
             currentTime: this.getCurrentTime(),
-            address: "",
-            cityList: [], // Danh sách thành phố
-            suggestions: [], // Gợi ý autocomplete
-            showSuggestions: false,
         };
     },
     methods: {
